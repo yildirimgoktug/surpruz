@@ -173,7 +173,7 @@ const CONFIG = {
   greeting: "Dünya Prensesler Günü'n kutlu olsun prensesim",
   greetingEmoji: "🥰🤓😝",
   greetingDelay: 0.5,  // çiçekler başladıktan kaç sn sonra yazı uçsun
-  greetingDuration: 4.15, // yazının sağ alttan sol üste geçiş süresi (sn)
+  greetingDuration: 4.3,  // yazının sağ alttan sol üste geçiş süresi (sn)
   bloomEnd: 14,        // çiçeklerin tamamen açıldığı an (sn)
   songStopAfter: 1.0,  // açılım bittikten kaç sn sonra şarkı dursun
   photoAfterStop: 2.0, // şarkı durduktan kaç sn sessizlik olsun, sonra fotoğraf + ses
@@ -866,8 +866,8 @@ function flyGreeting() {
   const at = (k, sc, rot) => `translate(-50%, -50%) translate(${dx * k}px, ${dy * k}px) scale(${sc}) rotate(${rot}deg)`;
   const anim = greet.animate([
     { transform: at(1, 0.7, -8), offset: 0 },
-    { transform: at(0.22, 1.08, -2), offset: 0.3 },      // hızla ortaya gelir
-    { transform: at(-0.18, 1.08, 1), offset: 0.72 },     // ortada yavaşlar: okunabilsin
+    { transform: at(0.22, 1.08, -2), offset: 0.29 },      // hızla ortaya gelir
+    { transform: at(-0.18, 1.08, 1), offset: 0.73 },     // ortada yavaşlar: okunabilsin
     { transform: at(-1, 0.75, 6), offset: 1 }            // sol üstten fırlayıp çıkar
   ], { duration: CONFIG.greetingDuration * 1000, easing: "linear", fill: "forwards" });
   anim.onfinish = () => { greet.style.visibility = "hidden"; };
