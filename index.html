@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Dünya Prensesler Günü</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: #07040a; }
+body {
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  color: #f6e6ef;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none; -webkit-user-select: none;
+}
+#bg {
+  position: fixed; inset: 0; overflow: hidden;
+  background:
+    radial-gradient(ellipse 85% 75% at 50% 48%, #2a1a2e 0%, #17101c 48%, #09070b 100%);
+}
+/* duman katmanları */
+.smoke {
+  position: absolute; inset: -30%;
+  background-size: 100% 100%; background-repeat: no-repeat;
+  mix-blend-mode: screen; filter: blur(6px);
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 78%);
+          mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 78%);
+  will-change: transform;
+}
+.smoke.a {
+  opacity: 0.34;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0045 0.009' numOctaves='4' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.62 0 0 0 0 0.34 0 0 0 0 0.74 1.7 1.0 0 0 -1.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: driftA 46s ease-in-out infinite alternate;
+}
+.smoke.b {
+  opacity: 0.24;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008 0.005' numOctaves='3' seed='23'/%3E%3CfeColorMatrix values='0 0 0 0 0.70 0 0 0 0 0.42 0 0 0 0 0.76 1.5 1.1 0 0 -1.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: driftB 62s ease-in-out infinite alternate;
+}
+@keyframes driftA { from { transform: translate(-6%, 3%) scale(1) rotate(0deg); } to { transform: translate(7%, -5%) scale(1.18) rotate(6deg); } }
+@keyframes driftB { from { transform: translate(6%, -4%) scale(1.15) rotate(3deg); } to { transform: translate(-7%, 5%) scale(1) rotate(-5deg); } }
+
+#scene {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  display: block; touch-action: none; cursor: grab;
+  opacity: 0; transition: opacity 1.4s ease;
+}
+#scene.on { opacity: 1; }
+#scene.dragging { cursor: grabbing; }
+#vignette {
+  position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(4, 2, 8, 0.75) 100%);
+}
+
+/* ===== AÇILIŞ ===== */
+#intro {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 24px; cursor: pointer;
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+#intro.gone { opacity: 0; transform: scale(1.08); pointer-events: none; }
+#intro h1 {
+  font-style: italic; font-weight: 600;
+  font-size: clamp(1.7rem, 5.6vw, 4.2rem);
+  line-height: 1.15; letter-spacing: 0.01em;
+  background: linear-gradient(100deg, #ffb3d9 0%, #e0a8ff 45%, #a8d8ff 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: brightness(0) drop-shadow(0 0 22px rgba(232, 120, 200, 0.35));
+  opacity: 0; transform: scale(0.94);
+  transition: opacity 0.55s ease, filter 0.75s ease, transform 0.75s ease;
+}
+#intro.reveal h1 { opacity: 1; transform: none; filter: brightness(1) drop-shadow(0 0 22px rgba(232, 120, 200, 0.35)); }
+#intro .hint {
+  position: absolute; left: 0; right: 0; top: 50%; margin-top: -0.6em;
+  font-size: clamp(0.95rem, 2.4vw, 1.25rem);
+  letter-spacing: 0.32em; text-transform: uppercase; color: #c9a4c4;
+  opacity: 0; animation: riseIn 1s ease 0.4s forwards, pulse 2.2s ease-in-out 1.4s infinite;
+}
+#intro.reveal .hint { visibility: hidden; }
+@keyframes riseIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 50% { opacity: 0.35; } }
+
+/* ===== KUTLAMA YAZISI (sağ alttan sol üste uçar) ===== */
+#greet {
+  position: fixed; left: 4vw; top: 4vh; z-index: 5; max-width: min(92vw, 34ch);
+  font-style: italic; font-weight: 600;
+  font-size: clamp(1.35rem, 3.3vw, 2.7rem); line-height: 1.2;
+  pointer-events: none; visibility: hidden;
+  transform-origin: left top; will-change: transform;
+  filter: drop-shadow(0 0 18px rgba(232, 120, 200, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+#greet .txt {
+  background: linear-gradient(100deg, #ffb3d9 0%, #e9b6ff 50%, #b4dcff 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+#greet .emo { font-style: normal; white-space: nowrap; }
+
+/* ===== FİNAL ===== */
+#flash {
+  position: fixed; inset: 0; z-index: 30; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle at center, #fff3d6 0%, #ff8a2a 50%, #b01000 100%);
+}
+#photoWrap {
+  position: fixed; left: 50%; top: 50%; z-index: 20; line-height: 0;
+  transform: translate(-50%, -50%) scale(0);
+  visibility: hidden; will-change: transform;
+}
+#photo {
+  display: block; max-width: 88vw; max-height: 90vh;
+  border-radius: 0;
+  border: 5px solid #fff;
+  box-shadow: 0 0 0 3px rgba(255, 150, 215, 0.6), 0 0 70px rgba(232, 110, 200, 0.75), 0 30px 80px rgba(0, 0, 0, 0.7);
+}
+#closePhoto {
+  position: absolute; left: 14px; top: 14px; width: 42px; height: 42px;
+  border: 2px solid #fff; border-radius: 50%;
+  background: rgba(12, 6, 16, 0.72); color: #fff;
+  font: 600 22px/1 Arial, sans-serif; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.15s ease, background 0.15s ease;
+}
+#closePhoto.on { opacity: 1; pointer-events: auto; }
+#closePhoto:hover { background: rgba(200, 40, 110, 0.9); transform: scale(1.1); }
+#boom {
+  position: fixed; left: 50%; top: 50%; z-index: 26;
+  width: min(150vw, 1150px); transform: translate(-50%, -52%);
+  pointer-events: none; display: none;
+}
+body.shake #bg, body.shake #scene { animation: shake 0.55s cubic-bezier(.36,.07,.19,.97); }
+@keyframes shake {
+  10%, 90% { transform: translate(-3px, 2px); }
+  20%, 80% { transform: translate(6px, -4px); }
+  30%, 50%, 70% { transform: translate(-10px, 6px); }
+  40%, 60% { transform: translate(10px, -6px); }
+}
+</style>
+</head>
+<body>
+<div id="bg"><div class="smoke a"></div><div class="smoke b"></div></div>
+<canvas id="scene"></canvas>
+<div id="vignette"></div>
+
+<div id="greet"><span class="txt"></span> <span class="emo"></span></div>
+
+<div id="intro">
+  <h1 id="title"></h1>
+  <div class="hint">dokun</div>
+</div>
+
+<div id="photoWrap">
+  <img id="photo" src="assets/photo.jpg" alt="">
+  <button id="closePhoto" aria-label="Kapat">&#10005;</button>
+</div>
+<img id="boom" alt="">
+<div id="flash"></div>
+
+<audio id="laugh" src="assets/laugh.mp4" preload="auto"></audio>
+<audio id="song" src="assets/song.mp4" preload="auto"></audio>
+<audio id="sfx" src="assets/sfx.mp4" preload="auto"></audio>
+
+<script src="assets/three.min.js"></script>
+<script>
+/* ============================================================
+   AYARLAR — buradan kolayca değiştirebilirsin
+   ============================================================ */
+const CONFIG = {
+  title: "BUGÜN DÜNYA PRENSESLER GÜNÜYMÜŞŞŞŞŞŞ",
+  titleHoldMax: 4.5,   // gülme sesi bitmezse en geç kaç sn sonra çiçekler başlasın
+  greeting: "Dünya Prensesler Günü kutlu olsun prensesim",
+  greetingEmoji: "🥰🤓😝",
+  greetingDelay: 0.5,  // çiçekler başladıktan kaç sn sonra yazı uçsun
+  bloomEnd: 14,        // çiçeklerin tamamen açıldığı an (sn)
+  songStopAfter: 1.0,  // açılım bittikten kaç sn sonra şarkı dursun
+  photoAfterStop: 2.0, // şarkı durduktan kaç sn sessizlik olsun, sonra fotoğraf + ses
+  photoFlight: 2.0,    // uçuş süresi (sn) — ses dosyasının süresi okunabilirse o kullanılır
+  photoSpins: 6,       // saat yönünün tersine kaç tur
+  sfxDistortion: 0.35, // "Patik" sesindeki distorsiyon: 0 = kapalı, 1 = çok bozuk (yalnızca http/https üzerinden açılınca çalışır)
+  boomUrl: "assets/explosion.gif",
+  boomDuration: 2.9,   // patlama GIF'inin süresi (sn) — bir kez oynar, sonra gizlenir
+  songStartAt: 0       // şarkının kaçıncı saniyesinden başlasın
+};
+
+document.getElementById('title').textContent = CONFIG.title;
+document.querySelector('#greet .txt').textContent = CONFIG.greeting;
+document.querySelector('#greet .emo').textContent = CONFIG.greetingEmoji;
+
+/* ============================================================
+   YARDIMCILAR
+   ============================================================ */
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp01 = x => Math.min(1, Math.max(0, x));
+const smooth = t => t * t * (3 - 2 * t);
+const easeInOut = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+let seed = 20261118;
+const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+const rr = (a, b) => a + (b - a) * rnd();
+const rgba = (hex, a) => `rgba(${hex >> 16 & 255},${hex >> 8 & 255},${hex & 255},${a})`;
+
+/* ============================================================
+   THREE.JS SAHNE
+   ============================================================ */
+const canvas = document.getElementById('scene');
+const SMALL = Math.min(window.innerWidth, window.innerHeight) < 700;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+const TARGET = new THREE.Vector3(0, 0.35, 0);
+let baseDist = 10, zoom = 1;
+
+/* ---------- yumuşak stüdyo ortam ışığı (yansımalar için) ---------- */
+(function buildEnvironment() {
+  const env = new THREE.Scene();
+  const sg = new THREE.SphereGeometry(12, 24, 16);
+  const col = new Float32Array(sg.attributes.position.count * 3);
+  for (let i = 0; i < sg.attributes.position.count; i++) {
+    const h = clamp01(sg.attributes.position.getY(i) / 24 + 0.5);
+    col[i * 3] = lerp(0.05, 0.95, h * h); col[i * 3 + 1] = lerp(0.03, 0.82, h * h); col[i * 3 + 2] = lerp(0.08, 1.0, h * h);
+  }
+  sg.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  env.add(new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
+  const panel = (x, y, z, r, g, b, s) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(s, s), new THREE.MeshBasicMaterial({ color: new THREE.Color(r, g, b), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
+  };
+  panel(4, 7, 5, 5.0, 4.5, 4.0, 6);      // sıcak ana ışık
+  panel(-7, 2, -4, 2.4, 0.6, 1.5, 6);    // pembe kenar ışığı
+  panel(7, 1, -5, 0.6, 1.2, 2.6, 6);     // mavi kenar ışığı
+  const pm = new THREE.PMREMGenerator(renderer);
+  scene.environment = pm.fromScene(env, 0.05).texture;
+  pm.dispose();
+})();
+
+scene.add(new THREE.HemisphereLight(0xffe4f4, 0x2a1038, 0.35));
+const key = new THREE.DirectionalLight(0xfff1e2, 2.3);
+key.position.set(3.5, 7, 5); key.target.position.set(0, 0.3, 0);
+key.castShadow = true;
+key.shadow.mapSize.set(SMALL ? 1024 : 2048, SMALL ? 1024 : 2048);
+key.shadow.camera.left = -5.5; key.shadow.camera.right = 5.5;
+key.shadow.camera.top = 5.5; key.shadow.camera.bottom = -5.5;
+key.shadow.camera.near = 1; key.shadow.camera.far = 24;
+key.shadow.bias = -0.0006; key.shadow.normalBias = 0.035; key.shadow.radius = 4;
+scene.add(key); scene.add(key.target);
+const rimPink = new THREE.PointLight(0xff5fb0, 40, 30); rimPink.position.set(-4, 2.5, -4); scene.add(rimPink);
+const rimBlue = new THREE.PointLight(0x6fb6ff, 34, 30); rimBlue.position.set(4.5, 1, -4); scene.add(rimBlue);
+
+const world = new THREE.Group();   // kullanıcının döndürdüğü grup
+scene.add(world);
+
+/* ---------- dokular: her zambak türü için boyanmış taç yaprağı ---------- */
+const SPECKS = [];
+for (let i = 0; i < 150; i++) SPECKS.push({ u: 0.07 + Math.pow(rnd(), 1.5) * 0.5, v: (rnd() - 0.5) * 0.6, r: rr(1.3, 3.4), a: rr(0.55, 0.95), d: rnd() });
+const VEINS = [];
+for (let i = -12; i <= 12; i++) VEINS.push({ i, j: rr(-1.5, 1.5) });
+
+function veinPath(g, vn, W, H) {
+  g.beginPath();
+  g.moveTo(W / 2 + vn.i * W * 0.012, H);
+  g.bezierCurveTo(W / 2 + vn.i * W * 0.05 + vn.j, H * 0.62, W / 2 + vn.i * W * 0.046 - vn.j, H * 0.3, W / 2 + vn.i * W * 0.006, 0);
+}
+
+function petalTexture(V) {
+  const W = 256, H = 512;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.fillStyle = rgba(V.main, 1); g.fillRect(0, 0, W, H);
+  // uca doğru hafif açılma
+  let lg = g.createLinearGradient(0, H, 0, 0);
+  lg.addColorStop(0, rgba(V.throat, 1)); lg.addColorStop(0.1, rgba(V.throat, 0.95));
+  lg.addColorStop(0.38, rgba(V.throat, 0)); lg.addColorStop(0.8, rgba(V.edge, 0)); lg.addColorStop(1, rgba(V.edge, 0.45));
+  g.fillStyle = lg; g.fillRect(0, 0, W, H);
+  // açık renkli kenarlar
+  const hg = g.createLinearGradient(0, 0, W, 0);
+  hg.addColorStop(0, rgba(V.edge, V.edgeAmt)); hg.addColorStop(0.3, rgba(V.edge, 0));
+  hg.addColorStop(0.7, rgba(V.edge, 0)); hg.addColorStop(1, rgba(V.edge, V.edgeAmt));
+  g.fillStyle = hg; g.fillRect(0, 0, W, H);
+  // orta damar boyunca koyu bant
+  g.save(); g.translate(W / 2, H * 0.6); g.scale(1, 6.5);
+  let rg = g.createRadialGradient(0, 0, 0, 0, 0, 46);
+  rg.addColorStop(0, rgba(V.deep, 0.62)); rg.addColorStop(0.5, rgba(V.deep, 0.25)); rg.addColorStop(1, rgba(V.deep, 0));
+  g.fillStyle = rg; g.fillRect(-W, -H, W * 2, H * 2); g.restore();
+  // boğazdaki yeşil nektar oluğu
+  g.save(); g.translate(W / 2, H); g.scale(1, 5);
+  rg = g.createRadialGradient(0, 0, 0, 0, 0, 30);
+  rg.addColorStop(0, 'rgba(120,170,50,0.9)'); rg.addColorStop(0.5, 'rgba(150,190,70,0.4)'); rg.addColorStop(1, 'rgba(150,190,70,0)');
+  g.fillStyle = rg; g.fillRect(-W, -H, W * 2, H * 2); g.restore();
+  // ince damarlar
+  g.lineWidth = 0.9;
+  VEINS.forEach((vn, k) => {
+    g.strokeStyle = k % 2 ? rgba(V.deep, 0.13) : 'rgba(255,255,255,0.09)';
+    veinPath(g, vn, W, H); g.stroke();
+  });
+  // doğal lekelenme
+  for (let i = 0; i < 900; i++) {
+    g.fillStyle = rnd() < 0.5 ? 'rgba(255,255,255,0.035)' : rgba(V.deep, 0.04);
+    g.fillRect(rnd() * W, rnd() * H, rr(1, 4), rr(3, 14));
+  }
+  // benekler
+  if (V.speckled) for (const s of SPECKS) {
+    g.fillStyle = `rgba(${90 + s.d * 50 | 0},8,${40 + s.d * 40 | 0},${s.a})`;
+    g.beginPath(); g.ellipse(W / 2 + s.v * W, H - s.u * H, s.r * 0.8, s.r * 1.5, 0, 0, 6.283); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+
+// kabartma: damarlar oluk, benekler kabarcık
+const bumpTex = (() => {
+  const W = 256, H = 512;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.fillStyle = '#808080'; g.fillRect(0, 0, W, H);
+  g.lineWidth = 2.2; g.strokeStyle = 'rgba(40,40,40,0.5)';
+  VEINS.forEach(vn => { veinPath(g, vn, W, H); g.stroke(); });
+  g.lineWidth = 7; g.strokeStyle = 'rgba(20,20,20,0.55)';
+  g.beginPath(); g.moveTo(W / 2, H); g.lineTo(W / 2, H * 0.1); g.stroke();
+  for (const s of SPECKS) {
+    g.fillStyle = 'rgba(255,255,255,0.8)';
+    g.beginPath(); g.ellipse(W / 2 + s.v * W, H - s.u * H, s.r, s.r * 1.6, 0, 0, 6.283); g.fill();
+  }
+  return new THREE.CanvasTexture(c);
+})();
+
+const leafTex = (() => {
+  const W = 128, H = 512;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const lg = g.createLinearGradient(0, H, 0, 0);
+  lg.addColorStop(0, '#4d8a3a'); lg.addColorStop(0.5, '#2f6a2c'); lg.addColorStop(1, '#3f7d33');
+  g.fillStyle = lg; g.fillRect(0, 0, W, H);
+  const hg = g.createLinearGradient(0, 0, W, 0);
+  hg.addColorStop(0, 'rgba(20,50,20,0.45)'); hg.addColorStop(0.5, 'rgba(0,0,0,0)'); hg.addColorStop(1, 'rgba(20,50,20,0.45)');
+  g.fillStyle = hg; g.fillRect(0, 0, W, H);
+  for (let i = -9; i <= 9; i++) {      // paralel damarlar
+    g.strokeStyle = i % 2 ? 'rgba(170,215,130,0.16)' : 'rgba(15,45,15,0.22)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(W / 2 + i * 1.5, H); g.quadraticCurveTo(W / 2 + i * 7, H * 0.5, W / 2 + i * 0.8, 0); g.stroke();
+  }
+  g.strokeStyle = 'rgba(190,225,150,0.5)'; g.lineWidth = 2.5;
+  g.beginPath(); g.moveTo(W / 2, H); g.lineTo(W / 2, 0); g.stroke();
+  for (let i = 0; i < 400; i++) { g.fillStyle = rnd() < 0.5 ? 'rgba(255,255,255,0.03)' : 'rgba(0,30,0,0.05)'; g.fillRect(rnd() * W, rnd() * H, 2, rr(4, 16)); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+})();
+
+const VARIETIES = {
+  pink:   { throat: 0xf4f7d8, main: 0xd9357f, edge: 0xfff0f6, deep: 0x8f0f4a, edgeAmt: 0.95, speckled: true },
+  purple: { throat: 0xf3efcf, main: 0x7d3fc4, edge: 0xe6d4ff, deep: 0x47157f, edgeAmt: 0.75, speckled: true },
+  lilac:  { throat: 0xfbf5d6, main: 0xc98be0, edge: 0xfdf0ff, deep: 0x8a3ea8, edgeAmt: 0.85, speckled: true },
+  blue:   { throat: 0xf6fae0, main: 0x8db9ee, edge: 0xf2f8ff, deep: 0x4a76c4, edgeAmt: 0.85, speckled: false },
+  blush:  { throat: 0xf2f6c8, main: 0xf7c3dc, edge: 0xffffff, deep: 0xe0609a, edgeAmt: 0.7,  speckled: true },
+  bud:    { throat: 0x8fb85a, main: 0xc9a0bf, edge: 0xa9c77a, deep: 0x7c9a4a, edgeAmt: 0.9,  speckled: false }
+};
+for (const k in VARIETIES) {
+  const V = VARIETIES[k], map = petalTexture(V);
+  V.mat = new THREE.MeshPhysicalMaterial({
+    map, side: THREE.DoubleSide, roughness: 0.6, metalness: 0,
+    bumpMap: bumpTex, bumpScale: 1.4,
+    sheen: 1, sheenRoughness: 0.45, sheenColor: new THREE.Color(V.edge).multiplyScalar(0.55),
+    // ışığın yaprağın içinden süzülmesi hissi
+    emissive: 0xffffff, emissiveMap: map, emissiveIntensity: 0.13
+  });
+}
+const leafMat = new THREE.MeshPhysicalMaterial({
+  map: leafTex, side: THREE.DoubleSide, roughness: 0.42, metalness: 0,
+  bumpMap: leafTex, bumpScale: 0.8, sheen: 0.4, sheenColor: new THREE.Color(0x9fd27a),
+  emissive: 0xffffff, emissiveMap: leafTex, emissiveIntensity: 0.05
+});
+const stemMat = new THREE.MeshStandardMaterial({ color: 0x47793a, roughness: 0.55 });
+const filamentMat = new THREE.MeshStandardMaterial({ color: 0xe6efc6, roughness: 0.5 });
+const antherMat = new THREE.MeshStandardMaterial({ color: 0x8a3812, roughness: 1.0 });
+const stigmaMat = new THREE.MeshStandardMaterial({ color: 0x7b9a4e, roughness: 0.35 });
+const ovaryMat = new THREE.MeshStandardMaterial({ color: 0x86a94f, roughness: 0.5 });
+
+/* ---------- parametrik yaprak / taç yaprağı ---------- */
+const NU = 26, NV = 12;
+const blades = [];        // sahnedeki tüm taç yaprakları ve yapraklar (hepsi dokunulabilir)
+
+function petalShape(u, peak) {
+  // mızrak biçimi: tabanda dar, ortada geniş, uçta sivri
+  return 0.15 * (1 - u) + Math.pow(Math.sin(Math.PI * Math.pow(u, peak)), 0.85) * (1 - 0.12 * u);
+}
+
+function makeBlade(p, material) {
+  const n = (NU + 1) * (NV + 1);
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(n * 3), uv = new Float32Array(n * 2), idx = [];
+  for (let i = 0; i <= NU; i++) for (let j = 0; j <= NV; j++) {
+    const k = i * (NV + 1) + j;
+    uv[k * 2] = j / NV; uv[k * 2 + 1] = i / NU;
+    if (i < NU && j < NV) { const a = k, b = k + 1, c = k + NV + 1, d = k + NV + 2; idx.push(a, c, b, b, c, d); }
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.frustumCulled = false; mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.userData = { p, o: 0, last: -1, poke: 0, pokeV: 0, lily: null };
+  blades.push(mesh);
+  updateBlade(mesh);
+  return mesh;
+}
+
+function updateBlade(mesh) {
+  const d = mesh.userData, p = d.p, open = d.o, poke = d.poke;
+  const pos = mesh.geometry.attributes.position.array;
+  const ds = p.len / NU;
+  let r = p.r0 * lerp(1, 1.5, open), y = 0;
+  const kappa = lerp(p.kC, p.kO, open);
+  const thAt = uu => lerp(p.cA + p.cB * Math.pow(uu, p.cE), p.oA + p.oB * Math.pow(uu, p.oE), open) + poke * Math.pow(uu, 1.3);
+  for (let i = 0; i <= NU; i++) {
+    const u = i / NU;
+    if (i > 0) { const tm = thAt(u - 0.5 / NU); r += Math.sin(tm) * ds; y += Math.cos(tm) * ds; }
+    const th = thAt(u);
+    const nx = -Math.cos(th), ny = Math.sin(th);
+    const w = p.width * petalShape(u, p.peak);
+    const tw = p.twist * open * u * u, ct = Math.cos(tw), st = Math.sin(tw);
+    const side = p.side * open * u * u * p.len;
+    const gF = p.groove * w * smooth(clamp01(u * 4)) * (1 - 0.55 * u);
+    const ruf = p.ruffle * open * w * smooth(clamp01(u * 3)) *
+                (Math.sin(u * 19 + p.phase) + 0.6 * Math.sin(u * 33 + p.phase * 1.7));
+    const roll = p.roll * open * w * smooth(clamp01(u * 2));
+    for (let j = 0; j <= NV; j++) {
+      const v = j / NV * 2 - 1, av = Math.abs(v), k = (i * (NV + 1) + j) * 3;
+      const a = kappa * v * w;
+      const xt = Math.sin(a) / kappa;
+      let xn = (1 - Math.cos(a)) / kappa;
+      xn -= gF * Math.exp(-v * v / 0.03);                 // orta damar oluğu
+      xn += p.ridge * w * open * Math.sin(Math.PI * av);    // oluğun iki yanındaki kabarıklık
+      xn += ruf * av * av * av * (v > 0 ? 1 : 0.8);        // dalgalı kenar
+      xn -= roll * av * av * av;                           // kenarların geriye kıvrılması
+      const xt2 = xt * ct - xn * st, xn2 = xt * st + xn * ct;   // uca doğru hafif burulma
+      pos[k] = r + nx * xn2; pos[k + 1] = y + ny * xn2; pos[k + 2] = xt2 + side;
+    }
+  }
+  mesh.geometry.attributes.position.needsUpdate = true;
+  mesh.geometry.computeVertexNormals();
+  d.last = open;
+}
+
+/* ---------- zambak ---------- */
+function makeLily(varName, size, maxOpen) {
+  const V = VARIETIES[varName];
+  const g = new THREE.Group();
+  const petals = [];
+  for (let i = 0; i < 6; i++) {
+    const inner = i % 2 === 1;
+    const p = {
+      len: (inner ? 1.0 : 0.96) * rr(0.96, 1.04),
+      width: inner ? 0.235 : 0.168,
+      r0: inner ? 0.03 : 0.048,
+      peak: inner ? 0.72 : 0.8,
+      // kapalı (tomurcuk) açı profili
+      cA: inner ? 0.30 : 0.40, cB: inner ? -0.80 : -0.95, cE: 1.15,
+      // açık açı profili: dipte huni, uca doğru güçlü geriye kıvrım
+      oA: 0.26 + rr(-0.04, 0.04), oB: (inner ? 2.2 : 2.55) + rr(-0.15, 0.15), oE: 1.75 + rr(-0.1, 0.1),
+      kC: inner ? 8.5 : 6.5, kO: inner ? 1.3 : 1.7,
+      groove: inner ? 0.2 : 0.14, ridge: 0.05,
+      ruffle: inner ? 0.24 : 0.1, roll: inner ? 0.2 : 0.32,
+      twist: rr(-0.4, 0.4), side: rr(-0.07, 0.07),
+      phase: rr(0, 6.28),
+      delay: (inner ? 0.14 : 0) + rr(0, 0.1)
+    };
+    const m = makeBlade(p, V.mat);
+    m.rotation.y = i * Math.PI / 3 + rr(-0.06, 0.06);
+    m.userData.lily = g;
+    g.add(m); petals.push(m);
+  }
+  // çiçek tablası
+  const ovary = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 10), ovaryMat);
+  ovary.scale.set(1, 1.7, 1); ovary.position.y = -0.02; ovary.castShadow = true; g.add(ovary);
+  // erkek organlar: ince, kıvrık filamentler ve sallanan anterler
+  const organs = new THREE.Group(); g.add(organs);
+  const pivots = [];
+  for (let i = 0; i < 6; i++) {
+    const holder = new THREE.Group(); holder.rotation.y = i * Math.PI / 3 + Math.PI / 6 + rr(-0.1, 0.1);
+    const pivot = new THREE.Group(); holder.add(pivot);
+    const L = rr(0.66, 0.76);
+    const curve = new THREE.CubicBezierCurve3(
+      new THREE.Vector3(0.012, 0, 0), new THREE.Vector3(-0.01, L * 0.4, 0),
+      new THREE.Vector3(0.03, L * 0.8, 0), new THREE.Vector3(0.13, L, 0));
+    const fil = new THREE.Mesh(new THREE.TubeGeometry(curve, 14, 0.0062, 5), filamentMat);
+    fil.castShadow = true; pivot.add(fil);
+    const anther = new THREE.Mesh(new THREE.CapsuleGeometry(0.021, 0.12, 3, 8), antherMat);
+    anther.position.set(0.13, L + 0.008, 0);
+    anther.rotation.set(rr(-0.35, 0.35), rr(0, 3.1), Math.PI / 2 + rr(-0.5, 0.5));
+    anther.castShadow = true; pivot.add(anther);
+    organs.add(holder); pivots.push(pivot);
+  }
+  const pc = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.0, 0.35, 0.0),
+    new THREE.Vector3(0.02, 0.7, 0.01), new THREE.Vector3(0.07, 0.96, 0.03));
+  const style = new THREE.Mesh(new THREE.TubeGeometry(pc, 14, 0.011, 6), filamentMat);
+  style.castShadow = true; organs.add(style);
+  for (let i = 0; i < 3; i++) {       // üç loblu tepecik
+    const lobe = new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 6), stigmaMat);
+    lobe.position.set(0.07 + Math.cos(i * 2.094) * 0.016, 0.968, 0.03 + Math.sin(i * 2.094) * 0.016);
+    organs.add(lobe);
+  }
+  g.userData = { petals, pivots, organs, size, maxOpen, wx: 0, wz: 0, vx: 0, vz: 0, ph: rr(0, 6.28) };
+  return g;
+}
+
+function updateLily(lily, rawOpen) {
+  const d = lily.userData;
+  for (const m of d.petals) {
+    const p = m.userData.p;
+    m.userData.o = easeInOut(clamp01((rawOpen - p.delay) / (1 - 0.24))) * d.maxOpen;
+  }
+  const o = easeInOut(clamp01(rawOpen)) * d.maxOpen;
+  d.organs.scale.setScalar(lerp(0.4, 1, o));
+  for (const pv of d.pivots) pv.rotation.z = -lerp(0.02, 0.4, o);
+}
+
+/* ---------- saplar, yapraklar, buket ---------- */
+const plants = [];
+
+function makeLeaf(over) {
+  const p = Object.assign({
+    len: rr(0.85, 1.25), width: rr(0.075, 0.1), r0: 0.03, peak: 0.6,
+    cA: 0.1, cB: 0.1, cE: 1, oA: rr(0.5, 0.8), oB: rr(0.7, 1.2), oE: 1.4,
+    kC: 3, kO: 2.2, groove: 0.3, ridge: 0, ruffle: 0.05, roll: 0,
+    twist: rr(-0.6, 0.6), side: rr(-0.05, 0.05), phase: rr(0, 6.28), delay: 0
+  }, over || {});
+  return makeBlade(p, leafMat);
+}
+
+function addPlant(opts) {
+  const { phi, R, y, variety, size, maxOpen } = opts;
+  const cx = Math.cos(phi), cz = Math.sin(phi);
+  const pts = [
+    new THREE.Vector3(cx * 0.10, -10, cz * 0.10),
+    new THREE.Vector3(cx * (0.22 + R * 0.12), -1.5, cz * (0.22 + R * 0.12)),
+    new THREE.Vector3(cx * R * 0.6, y - 0.42 - R * 0.1, cz * R * 0.6),
+    new THREE.Vector3(cx * R, y, cz * R)
+  ];
+  const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.5);
+  const TS = 90, RS = 7;
+  const stem = new THREE.Mesh(new THREE.TubeGeometry(curve, TS, 0.03 * Math.sqrt(size), RS), stemMat);
+  stem.frustumCulled = false; stem.castShadow = true; stem.receiveShadow = true;
+  world.add(stem);
+
+  const lily = makeLily(variety, size, maxOpen);
+  lily.scale.setScalar(size);
+  world.add(lily);
+
+  const leaves = [];
+  const nLeaves = maxOpen < 0.5 ? 3 : 5;
+  for (let i = 0; i < nLeaves; i++) {
+    const leaf = makeLeaf();
+    const at = lerp(0.66, 0.95, i / (nLeaves - 1)) + rr(-0.012, 0.012);
+    const holder = new THREE.Group();
+    holder.position.copy(curve.getPointAt(at));
+    holder.rotation.y = phi + i * 2.4 + rr(-0.3, 0.3);
+    holder.add(leaf); holder.scale.setScalar(0.001);
+    world.add(holder);
+    leaves.push({ leaf, holder, at });
+  }
+  plants.push({ curve, stem, lily, leaves, TS, RS, opts });
+}
+
+const up = new THREE.Vector3(0, 1, 0), _tan = new THREE.Vector3();
+function updatePlant(pl, t, time, dt) {
+  const o = pl.opts, L = pl.lily.userData;
+  const g = easeOut(clamp01((t - o.tStem) / 4.2));
+  const gg = lerp(0.5, 1, g);
+  pl.stem.geometry.setDrawRange(0, Math.ceil(gg * pl.TS) * pl.RS * 6);
+  const u = Math.min(1, Math.ceil(gg * pl.TS) / pl.TS);
+  pl.curve.getPointAt(u, pl.lily.position);
+  pl.curve.getTangentAt(u, _tan);
+  pl.lily.quaternion.setFromUnitVectors(up, _tan);
+  // dokunulunca sallanma (yay) + hafif doğal salınım
+  L.vx += (-34 * L.wx - 3.2 * L.vx) * dt; L.wx += L.vx * dt;
+  L.vz += (-34 * L.wz - 3.2 * L.vz) * dt; L.wz += L.vz * dt;
+  pl.lily.rotateX(L.wx + Math.sin(time * 0.8 + L.ph) * 0.018);
+  pl.lily.rotateZ(L.wz + Math.cos(time * 0.65 + L.ph) * 0.018);
+  pl.lily.scale.setScalar(o.size * lerp(0.3, 1, g));
+  pl.lily.visible = t > o.tStem;
+  for (const lf of pl.leaves) {
+    const s = easeOut(clamp01((gg - lf.at) / 0.1));
+    lf.holder.scale.setScalar(Math.max(0.001, s));
+    lf.leaf.userData.o = s;
+  }
+  updateLily(pl.lily, clamp01((t - o.tBloom) / o.bloomDur));
+}
+
+// 7 zambak: ortada bir, etrafında altı
+const order = ['pink', 'purple', 'lilac', 'blue', 'blush', 'purple', 'pink'];
+const bloomDur = 6.0;
+const lastStart = CONFIG.bloomEnd - bloomDur;            // son çiçeğin başlama anı
+const firstStart = 3.0;
+addPlant({ phi: 0.6, R: 0.18, y: 2.15, variety: order[0], size: 1.45, maxOpen: 1,
+           tStem: 0, tBloom: firstStart, bloomDur });
+for (let i = 0; i < 6; i++) {
+  const seq = [2, 5, 1, 4, 3, 6][i];
+  addPlant({
+    phi: i * Math.PI / 3 + 0.25 + rr(-0.12, 0.12),
+    R: 1.75 + rr(-0.1, 0.15),
+    y: (i % 2 ? 1.25 : 0.2) + rr(-0.15, 0.15),
+    variety: order[i + 1], size: rr(1.2, 1.4), maxOpen: rr(0.93, 1),
+    tStem: 0.25 + seq * 0.22,
+    tBloom: lerp(firstStart, lastStart, seq / 6 * 0.85), bloomDur
+  });
+}
+// alt kat: yanları dolduran, dışa doğru sarkan altı zambak daha
+const lowOrder = ['lilac', 'blue', 'pink', 'purple', 'blush', 'lilac'];
+for (let i = 0; i < 6; i++) {
+  const seq = [3, 0, 4, 1, 5, 2][i];
+  addPlant({
+    phi: i * Math.PI / 3 + 0.25 + Math.PI / 6 + rr(-0.12, 0.12),
+    R: 2.45 + rr(-0.15, 0.2),
+    y: (i % 2 ? -1.05 : -0.45) + rr(-0.15, 0.15),
+    variety: lowOrder[i], size: rr(1.05, 1.25), maxOpen: rr(0.9, 1),
+    tStem: 0.5 + seq * 0.25,
+    tBloom: lerp(firstStart, lastStart, 0.15 + seq / 5 * 0.85), bloomDur
+  });
+}
+// açmamış tomurcuklar
+for (let i = 0; i < 9; i++) {
+  const low = i >= 4;
+  addPlant({
+    phi: low ? i * 1.26 + 0.5 + rr(-0.2, 0.2) : i * Math.PI / 2 + 1.0 + rr(-0.2, 0.2),
+    R: low ? rr(1.7, 2.2) : rr(0.75, 1.0),
+    y: low ? rr(-0.5, 0.5) : rr(1.5, 2.3) - (i % 2) * 1.5,
+    variety: 'bud', size: rr(0.5, 0.7), maxOpen: rr(0.05, 0.18),
+    tStem: 1.2 + i * 0.2, tBloom: 6 + i * 0.6, bloomDur: 5
+  });
+}
+// tabandan dışa kıvrılan uzun yapraklar (yanları dolgunlaştırır)
+const foliage = [];
+for (let i = 0; i < 20; i++) {
+  const tier = i % 2;
+  const leaf = makeLeaf({ len: tier ? rr(1.5, 2.0) : rr(2.1, 2.8), width: rr(0.12, 0.17),
+                          oA: rr(0.45, 0.75), oB: tier ? rr(0.6, 1.0) : rr(0.9, 1.4) });
+  const holder = new THREE.Group();
+  const a = i * 0.9 + rr(-0.25, 0.25);
+  holder.position.set(Math.cos(a) * 0.14, tier ? rr(-1.7, -1.1) : rr(-2.7, -2.0), -Math.sin(a) * 0.14);
+  holder.rotation.y = a; holder.scale.setScalar(0.001);
+  holder.add(leaf); world.add(holder);
+  foliage.push({ leaf, holder, t0: 0.3 + i * 0.12 });
+}
+
+/* ---------- uçuşan ışıltılar ---------- */
+const sparkTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,220,245,0.6)'); gr.addColorStop(1, 'rgba(255,200,240,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+})();
+const _c2 = new THREE.Color();
+const SP = 260;
+const spPos = new Float32Array(SP * 3), spCol = new Float32Array(SP * 3), spSeed = [];
+const spPalette = [0xff9fd6, 0xd6a6ff, 0xa9d8ff, 0xffe3b0];
+for (let i = 0; i < SP; i++) {
+  spPos[i * 3] = rr(-6, 6); spPos[i * 3 + 1] = rr(-4, 5); spPos[i * 3 + 2] = rr(-6, 6);
+  _c2.setHex(spPalette[i % 4]); spCol[i * 3] = _c2.r; spCol[i * 3 + 1] = _c2.g; spCol[i * 3 + 2] = _c2.b;
+  spSeed.push({ s: rr(0.12, 0.4), p: rr(0, 6.28) });
+}
+const spGeo = new THREE.BufferGeometry();
+spGeo.setAttribute('position', new THREE.BufferAttribute(spPos, 3));
+spGeo.setAttribute('color', new THREE.BufferAttribute(spCol, 3));
+const sparks = new THREE.Points(spGeo, new THREE.PointsMaterial({
+  size: 0.16, map: sparkTex, vertexColors: true, transparent: true, opacity: 0.0,
+  depthWrite: false, blending: THREE.AdditiveBlending
+}));
+sparks.frustumCulled = false;
+world.add(sparks);
+
+/* ---------- dokununca saçılan polen ---------- */
+const PN = 260;
+const pPos = new Float32Array(PN * 3).fill(999), pCol = new Float32Array(PN * 3), pVel = new Float32Array(PN * 3), pLife = new Float32Array(PN);
+let pNext = 0;
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+const pollen = new THREE.Points(pGeo, new THREE.PointsMaterial({
+  size: 0.13, map: sparkTex, vertexColors: true, transparent: true,
+  depthWrite: false, blending: THREE.AdditiveBlending
+}));
+pollen.frustumCulled = false;
+world.add(pollen);
+function puff(local, n) {
+  for (let i = 0; i < n; i++) {
+    const k = pNext; pNext = (pNext + 1) % PN;
+    pPos[k * 3] = local.x; pPos[k * 3 + 1] = local.y; pPos[k * 3 + 2] = local.z;
+    const a = Math.random() * 6.283, b = Math.acos(Math.random() * 2 - 1), s = 0.4 + Math.random() * 1.3;
+    pVel[k * 3] = Math.sin(b) * Math.cos(a) * s; pVel[k * 3 + 1] = Math.cos(b) * s + 0.5; pVel[k * 3 + 2] = Math.sin(b) * Math.sin(a) * s;
+    pLife[k] = 0.7 + Math.random() * 0.8;
+    _c2.setHex([0xffd27a, 0xffb0dc, 0xfff2c0, 0xd9b0ff][i % 4]);
+    pCol[k * 3] = _c2.r; pCol[k * 3 + 1] = _c2.g; pCol[k * 3 + 2] = _c2.b;
+  }
+  pGeo.attributes.color.needsUpdate = true;
+}
+function stepPollen(dt) {
+  for (let k = 0; k < PN; k++) {
+    if (pLife[k] <= 0) continue;
+    pLife[k] -= dt;
+    if (pLife[k] <= 0) { pPos[k * 3 + 1] = 999; continue; }
+    const dr = Math.pow(0.15, dt);
+    pVel[k * 3] *= dr; pVel[k * 3 + 1] = pVel[k * 3 + 1] * dr - 0.9 * dt; pVel[k * 3 + 2] *= dr;
+    pPos[k * 3] += pVel[k * 3] * dt; pPos[k * 3 + 1] += pVel[k * 3 + 1] * dt; pPos[k * 3 + 2] += pVel[k * 3 + 2] * dt;
+    if (pLife[k] < 0.4) { const f = Math.pow(0.02, dt); pCol[k * 3] *= f; pCol[k * 3 + 1] *= f; pCol[k * 3 + 2] *= f; }
+  }
+  pGeo.attributes.position.needsUpdate = true; pGeo.attributes.color.needsUpdate = true;
+}
+
+/* ============================================================
+   ETKİLEŞİM — döndürme, yakınlaştırma ve çiçeklere dokunma
+   ============================================================ */
+let yaw = -0.4, pitch = 0.12, vYaw = 0, vPitch = 0, lastInteract = -10;
+const pointers = new Map(); let pinchDist = 0, tap = null;
+const raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2(), _hit = new THREE.Vector3();
+
+function touchFlower(clientX, clientY) {
+  ndc.set(clientX / window.innerWidth * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  for (const b of blades) b.geometry.computeBoundingSphere();
+  const hits = raycaster.intersectObjects(blades, false);
+  if (!hits.length) return false;
+  const mesh = hits[0].object, d = mesh.userData;
+  d.pokeV += 3.6;                                   // dokunulan yaprak esner
+  if (d.lily) {
+    const L = d.lily.userData;
+    for (const m of L.petals) if (m !== mesh) m.userData.pokeV += 0.9 + Math.random() * 0.6;
+    const a = Math.random() * 6.283;                // çiçek başı sallanır
+    L.vx += Math.cos(a) * 1.5; L.vz += Math.sin(a) * 1.5;
+  }
+  _hit.copy(hits[0].point); world.worldToLocal(_hit);
+  puff(_hit, d.lily ? 30 : 10);
+  return true;
+}
+
+const endPtr = e => { pointers.delete(e.pointerId); pinchDist = 0; if (!pointers.size) canvas.classList.remove('dragging'); };
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  canvas.classList.add('dragging');
+  tap = pointers.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null;
+  if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinchDist = Math.hypot(a.x - b.x, a.y - b.y); }
+});
+canvas.addEventListener('pointermove', e => {
+  const p = pointers.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  p.x = e.clientX; p.y = e.clientY;
+  if (tap && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 8) tap = null;
+  if (tap) return;                                  // küçük titremeler döndürme sayılmaz
+  lastInteract = performance.now() / 1000;
+  if (pointers.size === 1) {
+    const k = 0.0058;
+    yaw += dx * k; pitch = Math.min(0.85, Math.max(-0.55, pitch + dy * k));
+    vYaw = dx * k * 60; vPitch = dy * k * 60;
+  } else if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (pinchDist > 0) zoom = Math.min(1.5, Math.max(0.55, zoom * pinchDist / d));
+    pinchDist = d;
+  }
+});
+canvas.addEventListener('pointerup', e => {
+  if (tap && performance.now() - tap.t < 450) { touchFlower(e.clientX, e.clientY); lastInteract = performance.now() / 1000; }
+  tap = null; endPtr(e);
+});
+canvas.addEventListener('pointercancel', e => { tap = null; endPtr(e); });
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoom = Math.min(1.5, Math.max(0.55, zoom * Math.exp(e.deltaY * 0.001)));
+}, { passive: false });
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  const tanH = Math.tan(camera.fov * Math.PI / 360);
+  baseDist = Math.max(3.9 / tanH, 3.8 / (tanH * camera.aspect));
+  camera.updateProjectionMatrix();
+}
+
+/* ============================================================
+   ZAMAN ÇİZELGESİ
+   ============================================================ */
+const laugh = document.getElementById('laugh'), song = document.getElementById('song'), sfx = document.getElementById('sfx');
+const photoWrap = document.getElementById('photoWrap'), closeBtn = document.getElementById('closePhoto');
+const flash = document.getElementById('flash'), boom = document.getElementById('boom');
+const intro = document.getElementById('intro'), greet = document.getElementById('greet');
+let revealed = false, started = false, t0 = 0, songStopped = false, photoLaunched = false, landed = false, greeted = false;
+const T_SONG_STOP = CONFIG.bloomEnd + CONFIG.songStopAfter;
+const T_PHOTO = T_SONG_STOP + CONFIG.photoAfterStop;
+const boomPreload = new Image(); boomPreload.src = CONFIG.boomUrl;   // GIF'i önceden yükle
+
+// Sonradan (dokunuş dışında) çalacak sesleri dokunuş anında sessizce "aç" (mobil tarayıcılar için)
+function unlock(a, at) {
+  a.muted = true;
+  const p = a.play();
+  const done = () => { a.pause(); try { a.currentTime = at || 0; } catch (e) {} a.muted = false; };
+  if (p && p.then) p.then(done).catch(() => { a.muted = false; }); else done();
+}
+
+// "Patik" sesine hafif distorsiyon + bas (ses hâlâ tanınır kalır). Dosyaya dokunmaz.
+// Tarayıcı kısıtı yüzünden yalnızca http/https üzerinden açıldığında devreye girer.
+function setupSfxDistortion() {
+  const amt = CONFIG.sfxDistortion;
+  if (!amt || !/^https?:$/.test(location.protocol)) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AC(), src = ctx.createMediaElementSource(sfx);
+    const shaper = ctx.createWaveShaper(), k = amt * 60, curve = new Float32Array(2048);
+    for (let i = 0; i < 2048; i++) { const x = i / 1023.5 - 1; curve[i] = (1 + k) * x / (1 + k * Math.abs(x)); }
+    shaper.curve = curve; shaper.oversample = '4x';
+    const bass = ctx.createBiquadFilter(); bass.type = 'lowshelf'; bass.frequency.value = 240; bass.gain.value = 14 * amt;
+    const out = ctx.createGain(); out.gain.value = 1 - 0.35 * amt;
+    src.connect(bass); bass.connect(shaper); shaper.connect(out); out.connect(ctx.destination);
+    ctx.resume();
+  } catch (e) {}
+}
+
+// 1. adım: dokunuş → yazı karanlıktan belirir + gülme sesi
+function reveal() {
+  if (revealed) return;
+  revealed = true;
+  setupSfxDistortion();
+  unlock(song, CONFIG.songStartAt); unlock(sfx, 0);
+  intro.classList.add('reveal');
+  laugh.play().catch(() => {});
+  let fired = false;
+  const go = () => { if (!fired) { fired = true; start(); } };
+  laugh.addEventListener('ended', () => setTimeout(go, 250));
+  laugh.addEventListener('error', () => setTimeout(go, 2500));
+  setTimeout(go, CONFIG.titleHoldMax * 1000);
+}
+
+// 2. adım: çiçek animasyonu + şarkı
+function start() {
+  if (started) return;
+  started = true;
+  song.muted = false; song.volume = 1;
+  try { song.currentTime = CONFIG.songStartAt; } catch (e) {}
+  song.play().catch(() => {});
+  intro.classList.add('gone');
+  canvas.classList.add('on');
+  t0 = performance.now() / 1000;
+}
+intro.addEventListener('click', reveal);
+window.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') reveal(); });
+
+// kutlama yazısı: sağ alttan sol üste uçar, yerine "pat" diye oturur ve orada kalır
+function flyGreeting() {
+  greeted = true;
+  greet.style.visibility = 'visible';
+  const dx = window.innerWidth, dy = window.innerHeight;
+  greet.animate([
+    { transform: `translate(${dx}px, ${dy}px) scale(0.35) rotate(-14deg)`, opacity: 0, offset: 0 },
+    { transform: `translate(${dx * 0.45}px, ${dy * 0.45}px) scale(0.7) rotate(-9deg)`, opacity: 1, offset: 0.45 },
+    { transform: 'translate(0px, 0px) scale(1.16) rotate(2deg)', opacity: 1, offset: 0.8 },
+    { transform: 'translate(0px, 0px) scale(0.96) rotate(-1deg)', opacity: 1, offset: 0.9 },
+    { transform: 'translate(0px, 0px) scale(1) rotate(0deg)', opacity: 1, offset: 1 }
+  ], { duration: 1900, easing: 'cubic-bezier(.25,.6,.3,1)', fill: 'forwards' });
+}
+
+function launchPhoto() {
+  photoLaunched = true;
+  sfx.currentTime = 0; sfx.play().catch(() => {});
+  photoWrap.style.visibility = 'visible';
+  const dx = window.innerWidth / 2, dy = window.innerHeight / 2;
+  const spin = -360 * CONFIG.photoSpins;   // negatif = saat yönünün tersi
+  // Uçuş, ses dosyası bittiği anda bitsin: süreyi sesin kendi süresinden al
+  const dur = (isFinite(sfx.duration) && sfx.duration > 0.4 && sfx.duration < 10) ? sfx.duration : CONFIG.photoFlight;
+  const anim = photoWrap.animate([
+    { transform: `translate(-50%,-50%) translate(${dx}px,${dy}px) rotate(0deg) scale(0.06)`, offset: 0 },
+    { transform: `translate(-50%,-50%) translate(${dx * 0.45}px,${dy * 0.45}px) rotate(${spin * 0.5}deg) scale(0.35)`, offset: 0.45 },
+    { transform: `translate(-50%,-50%) translate(${dx * 0.08}px,${dy * 0.08}px) rotate(${spin * 0.9}deg) scale(0.85)`, offset: 0.8 },
+    { transform: `translate(-50%,-50%) translate(0px,0px) rotate(${spin}deg) scale(1.12)`, offset: 0.93 },
+    { transform: `translate(-50%,-50%) translate(0px,0px) rotate(${spin}deg) scale(1)`, offset: 1 }
+  ], { duration: dur * 1000, easing: 'linear', fill: 'forwards' });
+  setTimeout(land, dur * 930);
+  anim.onfinish = () => { photoWrap.style.transform = 'translate(-50%,-50%) scale(1)'; anim.cancel(); closeBtn.classList.add('on'); };
+}
+
+function land() {
+  landed = true;
+  document.body.classList.add('shake');
+  flash.animate([{ opacity: 0.75 }, { opacity: 0 }], { duration: 450, easing: 'ease-out' });
+  // tek bir patlama: ekranın tam ortasında GIF bir kez oynar, sonra kaybolur
+  boom.removeAttribute('src'); boom.src = CONFIG.boomUrl;
+  boom.style.display = 'block';
+  setTimeout(() => { boom.style.display = 'none'; boom.removeAttribute('src'); }, CONFIG.boomDuration * 1000);
+}
+
+// çarpı: fotoğrafı kapat, çiçekler yeniden görünür
+closeBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  closeBtn.classList.remove('on');
+  const a = photoWrap.animate([
+    { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+    { transform: 'translate(-50%,-50%) scale(0.6) rotate(8deg)', opacity: 0 }
+  ], { duration: 320, easing: 'ease-in', fill: 'forwards' });
+  a.onfinish = () => { photoWrap.style.visibility = 'hidden'; };
+});
+
+/* ============================================================
+   ANA DÖNGÜ
+   ============================================================ */
+let prev = performance.now() / 1000;
+function frame() {
+  requestAnimationFrame(frame);
+  const now = performance.now() / 1000;
+  const dt = Math.min(0.05, now - prev); prev = now;
+  const t = started ? now - t0 : 0;
+
+  if (started) {
+    if (!greeted && t >= CONFIG.greetingDelay) flyGreeting();
+    if (!songStopped && t >= T_SONG_STOP) { songStopped = true; song.pause(); }
+    if (!photoLaunched && t >= T_PHOTO) launchPhoto();
+  }
+
+  // döndürme: sürüklenmiyorsa atalet + yavaş otomatik dönüş
+  if (!pointers.size) {
+    yaw += vYaw * dt; pitch = Math.min(0.85, Math.max(-0.55, pitch + vPitch * dt));
+    vYaw *= Math.pow(0.04, dt); vPitch *= Math.pow(0.02, dt);
+    if (now - lastInteract > 1.5) yaw += 0.13 * dt;
+  }
+  world.rotation.set(0, yaw, 0);
+  const d = baseDist * zoom * lerp(1.18, 1, easeOut(clamp01(t / 9)));
+  camera.position.set(0, TARGET.y + Math.sin(pitch) * d, Math.cos(pitch) * d);
+  camera.lookAt(TARGET);
+
+  for (const pl of plants) updatePlant(pl, t, now, dt);
+  for (const f of foliage) {
+    const s = easeOut(clamp01((t - f.t0) / 3.5));
+    f.holder.scale.setScalar(Math.max(0.001, s)); f.leaf.userData.o = s;
+  }
+  // yaprak geometrisi yalnızca değiştiğinde yeniden hesaplanır (açılırken ya da dokunulunca)
+  for (const b of blades) {
+    const u = b.userData;
+    let dirty = Math.abs(u.o - u.last) > 1e-4;
+    if (u.poke !== 0 || u.pokeV !== 0) {
+      u.pokeV += (-70 * u.poke - 5.5 * u.pokeV) * dt; u.poke += u.pokeV * dt;
+      if (Math.abs(u.poke) < 0.002 && Math.abs(u.pokeV) < 0.02) { u.poke = 0; u.pokeV = 0; }
+      dirty = true;
+    }
+    if (dirty) updateBlade(b);
+  }
+
+  sparks.material.opacity = 0.85 * clamp01((t - 1) / 4);
+  for (let i = 0; i < SP; i++) {
+    const s = spSeed[i];
+    spPos[i * 3 + 1] += s.s * dt * 0.6;
+    spPos[i * 3] += Math.sin(now * 0.5 + s.p) * dt * 0.08;
+    if (spPos[i * 3 + 1] > 5) spPos[i * 3 + 1] = -4;
+  }
+  spGeo.attributes.position.needsUpdate = true;
+  stepPollen(dt);
+
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', resize);
+resize();
+frame();
+
+// Test kolaylığı: index.html?auto&t=12 ile zaman çizelgesinde ileri sar
+const qs = new URLSearchParams(location.search);
+const skip = parseFloat(qs.get('t'));
+if (qs.has('auto')) { revealed = true; intro.classList.add('reveal'); start(); if (!isNaN(skip)) t0 -= skip; }
+if (qs.has('poke')) setTimeout(() => { for (let i = 0; i < 40; i++) touchFlower(window.innerWidth * (0.25 + 0.5 * Math.random()), window.innerHeight * (0.2 + 0.5 * Math.random())); }, 300);
+</script>
+</body>
+</html>
